@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  cass1:
+    image: cassandra:latest
+    container_name: cass1
+    networks:
+      - cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=LoggingCluster
+      - CASSANDRA_SEEDS=cass1,cass2
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_LISTEN_ADDRESS=cass1
+      - CASSANDRA_BROADCAST_ADDRESS=cass1
+      - CASSANDRA_RPC_ADDRESS=0.0.0.0
+    ports:
+      - "9042:9042"  # Port CQL
+      - "7000:7000"  # Port Gossip
+    volumes:
+      - cassandra-data1:/var/lib/cassandra
+
+  cass2:
+    image: cassandra:latest
+    container_name: cass2
+    networks:
+      - cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=LoggingCluster
+      - CASSANDRA_SEEDS=cass1,cass2
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_LISTEN_ADDRESS=cass2
+      - CASSANDRA_BROADCAST_ADDRESS=cass2
+      - CASSANDRA_RPC_ADDRESS=0.0.0.0
+    ports:
+      - "9043:9042"  # Port CQL dla cass2
+      - "7001:7000"  # Port Gossip dla cass2
+    volumes:
+      - cassandra-data2:/var/lib/cassandra
+    depends_on:
+      - cass1
+  
+  cass3:
+    image: cassandra:latest
+    container_name: cass3
+    networks:
+      - cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=LoggingCluster
+      - CASSANDRA_SEEDS=cass1,cass2,cass3
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - CASSANDRA_LISTEN_ADDRESS=cass3
+      - CASSANDRA_BROADCAST_ADDRESS=cass3
+      - CASSANDRA_RPC_ADDRESS=0.0.0.0
+    ports:
+      - "9044:9042"
+      - "7002:7000"
+    volumes:
+      - cassandra-data3:/var/lib/cassandra
+    depends_on:
+      - cass1
+      
+networks:
+  cassandra:
+    driver: bridge
+
+volumes:
+  cassandra-data1:
+    driver: local
+  cassandra-data2:
+    driver: local
+  cassandra-data3:
+    driver: local
